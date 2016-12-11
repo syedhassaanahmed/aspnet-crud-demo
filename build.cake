@@ -60,8 +60,8 @@ Task("Test")
 	{
 		DotNetCoreTest("./AspNetCore.CrudDemo.Controllers.Tests");
 
-		// Because DocumentDB emulator is not present on Travis
-		if (!BuildSystem.IsRunningOnTravisCI)
+		// Because DocumentDB emulator is not yet supported on CI
+		if (BuildSystem.IsLocalBuild)
 			DotNetCoreTest("./AspNetCore.CrudDemo.Services.Tests");
 	});
 
