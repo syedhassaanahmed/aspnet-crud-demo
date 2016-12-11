@@ -24,7 +24,7 @@ mono:
   - 4.2.3
 
 script:
-  - ./build.sh
-
+  - ./build.sh --verbosity diagnostic
+  
 notifications:
   email: false
