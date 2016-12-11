@@ -1,12 +1,13 @@
 #tool "nuget:?package=GitVersion.CommandLine"
 
 var target = Argument("target", "Default");
+var configuration = Argument("configuration", "Release");
+
 var outputDir = "./artifacts/";
 var artifactName = "artifact.zip";
 var solutionPath = "./AspNetCore.CrudDemo.sln";
 var projectPath = "./AspNetCore.CrudDemo";
 var projectJsonPath = projectPath + "/project.json";
-var buildConfig = "Release";
 
 Task("Clean")
 	.Does(() => 
@@ -43,9 +44,8 @@ Task("Build")
 	.Does(() => 
 	{
 		DotNetBuild(solutionPath, settings => settings
-			.SetConfiguration(buildConfig)
-        	.SetVerbosity(Verbosity.Minimal)
-        	.WithTarget("Build"));
+			.SetConfiguration(configuration)
+        	.SetVerbosity(Verbosity.Minimal));
 	});
 
 Task("Test")
@@ -65,7 +65,7 @@ Task("Publish")
 	{
 		var settings = new DotNetCorePublishSettings
 		{
-			Configuration = buildConfig,
+			Configuration = configuration,
 			OutputDirectory = outputDir
 		};
 					
