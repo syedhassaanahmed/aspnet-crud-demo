@@ -29,15 +29,11 @@ Task("Version")
 		});
 
 		var versionInfo = GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
-		VersionProject(projectPath + "/project.json", versionInfo);
-	});
 
-private void VersionProject(string projectJsonPath, GitVersion versionInfo)
-{
-	var updatedProjectJson = System.IO.File.ReadAllText(projectJsonPath)
-		.Replace("1.0.0-*", versionInfo.NuGetVersion);
-	System.IO.File.WriteAllText(projectJsonPath, updatedProjectJson);
-}
+		var updatedProjectJson = System.IO.File.ReadAllText(projectPath + "/project.json")
+			.Replace("1.0.0-*", versionInfo.NuGetVersion);
+		System.IO.File.WriteAllText(projectJsonPath, updatedProjectJson);
+	});
 
 Task("Build")
 	.IsDependentOn("Clean")
@@ -69,7 +65,14 @@ Task("Publish")
 	.IsDependentOn("Test")
 	.Does(() => 
 	{
-		PublishProject(projectPath, artifactName);
+		var settings = new DotNetCorePublishSettings
+		{
+			Configuration = buildConfig,
+			OutputDirectory = outputDir
+		};
+					
+		DotNetCorePublish(projectPath, settings);
+		Zip(outputDir, artifactName);
 
 		if (BuildSystem.IsRunningOnAppVeyor)
 		{
@@ -78,18 +81,6 @@ Task("Publish")
 				AppVeyor.UploadArtifact(file.FullPath);
 		}
 	});
-
-private void PublishProject(string projectPath, string artifactName)
-{
-	var settings = new DotNetCorePublishSettings
-	{
-		Configuration = buildConfig,
-		OutputDirectory = outputDir
-	};
-				
-	DotNetCorePublish(projectPath, settings);
-	Zip(outputDir, artifactName);
-}
 
 Task("Default")
 	.IsDependentOn("Publish");
