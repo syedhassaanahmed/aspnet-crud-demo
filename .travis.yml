@@ -1,5 +1,15 @@
 language: csharp
-sudo: false
+sudo: required
+dist: trusty
+addons:
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+- zlib1g
 env:  
   - CLI_VERSION=latest
 mono:
@@ -7,6 +17,7 @@ mono:
 os:
   - linux
   - osx
+osx_image: xcode7.1
 before_install:  
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fiopenssl; fi
 install:
