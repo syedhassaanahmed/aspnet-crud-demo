@@ -1,5 +1,7 @@
 language: csharp
 sudo: false
+env:  
+  - CLI_VERSION=latest
 mono:
   - latest
 os:
