@@ -5,6 +5,7 @@ var outputDir = "./artifacts/";
 var artifactName = "artifact.zip";
 var solutionPath = "./AspNetCore.CrudDemo.sln";
 var projectPath = "./AspNetCore.CrudDemo";
+var projectJsonPath = projectPath + "/project.json";
 var buildConfig = "Release";
 
 Task("Clean")
@@ -30,7 +31,7 @@ Task("Version")
 
 		var versionInfo = GitVersion(new GitVersionSettings{ OutputType = GitVersionOutput.Json });
 
-		var updatedProjectJson = System.IO.File.ReadAllText(projectPath + "/project.json")
+		var updatedProjectJson = System.IO.File.ReadAllText(projectJsonPath)
 			.Replace("1.0.0-*", versionInfo.NuGetVersion);
 		System.IO.File.WriteAllText(projectJsonPath, updatedProjectJson);
 	});
