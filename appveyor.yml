@@ -1,5 +1,5 @@
 before_build:
-- .\DocumentDB Emulator\DocumentDB.Emulator.exe
+- .\"DocumentDB Emulator"\DocumentDB.Emulator.exe
 build_script:
   - ps: .\build.ps1
 cache:
