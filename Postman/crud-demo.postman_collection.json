@@ -1,0 +1,107 @@
+{
+	"variables": [],
+	"info": {
+		"name": "crud-demo",
+		"_postman_id": "63ebc90f-23cc-e7a4-1a05-118b116d831d",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All Products",
+			"request": {
+				"url": "http://127.0.0.1:4719/api/products",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Product",
+			"request": {
+				"url": "http://127.0.0.1:4719/api/products/d4c07eef-5c0d-4942-852d-6428393d4f33",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get Product HTML",
+			"request": {
+				"url": "http://127.0.0.1:4719/api/products/d4c07eef-5c0d-4942-852d-6428393d4f33/html",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Create Product",
+			"request": {
+				"url": "http://127.0.0.1:4719/api/products",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"html\" : \"<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><title>title</title><link rel='stylesheet' href='style.css'><script src='script.js'></script></head><body><!-- page content --></body></html>\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Update Product",
+			"request": {
+				"url": "http://127.0.0.1:4719/api/products",
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\" : \"d4c07eef-5c0d-4942-852d-6428393d4f33\",\n\t\"html\" : \"<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><title>title</title><link rel='stylesheet' href='style.css'><script src='script.js'></script></head><body><!-- page content --></body></html>\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Product",
+			"request": {
+				"url": "http://127.0.0.1:4719/api/products/d4c07eef-5c0d-4942-852d-6428393d4f33",
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
