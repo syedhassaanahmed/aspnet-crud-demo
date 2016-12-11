@@ -42,13 +42,10 @@ Task("Build")
 	.IsDependentOn("Restore")
 	.Does(() => 
 	{
-		MSBuild(solutionPath, new MSBuildSettings 
-		{
-			Verbosity = Verbosity.Minimal,
-			ToolVersion = MSBuildToolVersion.VS2015,
-			Configuration = buildConfig,
-			PlatformTarget = PlatformTarget.MSIL
-		});
+		DotNetBuild(solutionPath, settings => settings
+			.SetConfiguration(buildConfig)
+        	.SetVerbosity(Core.Diagnostics.Verbosity.Minimal)
+        	.WithTarget("Build"));
 	});
 
 Task("Test")
