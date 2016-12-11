@@ -1,5 +1,3 @@
-before_build:
-- start .\"DocumentDB Emulator"\DocumentDB.Emulator.exe /noui /noexplorer
 build_script:
   - ps: .\build.ps1
 cache:
