@@ -30,9 +30,6 @@ before_install:
   # Add dotnet to PATH
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"
 
-  # Update submodules
-  - git submodule update --init --recursive
-
   # Display dotnet version info
   - which dotnet;
     if [ $? -eq 0 ]; then
