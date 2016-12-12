@@ -2,6 +2,7 @@
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
+var framework = Argument("framework", "netcoreapp1.1");
 
 var outputDir = "./artifacts/";
 var artifactName = "artifact.zip";
@@ -44,6 +45,7 @@ Task("Build")
 	{
 		var settings = new DotNetCoreBuildSettings
 		{
+			Framework = framework,
 			Configuration = configuration,
 			OutputDirectory = outputDir
 		};
