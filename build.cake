@@ -61,11 +61,17 @@ Task("Test")
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
-		DotNetCoreTest("./AspNetCore.CrudDemo.Controllers.Tests");
+		var settings = new DotNetCoreTestSettings
+		{
+			Framework = framework,
+			Configuration = configuration,
+		};
+
+		DotNetCoreTest("./AspNetCore.CrudDemo.Controllers.Tests", settings);
 
 		// Because DocumentDB emulator is not yet supported on CI
 		if (BuildSystem.IsLocalBuild)
-			DotNetCoreTest("./AspNetCore.CrudDemo.Services.Tests");
+			DotNetCoreTest("./AspNetCore.CrudDemo.Services.Tests", settings);
 	});
 
 Task("Publish")
