@@ -51,7 +51,7 @@ Task("Build")
 			Configuration = configuration,
 		};
 
-		foreach(var project in projects)
+		foreach (var project in projects)
 		{
 			DotNetCoreBuild(project.GetDirectory().FullPath, settings);
 		}
@@ -61,6 +61,10 @@ Task("Test")
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
+		//Travis has an issue with running xUnit on .NET Core 1.1
+		if (BuildSystem.IsRunningOnTravisCI)
+			return;
+
 		var settings = new DotNetCoreTestSettings
 		{
 			Framework = framework,
@@ -90,7 +94,7 @@ Task("Publish")
 		if (BuildSystem.IsRunningOnAppVeyor)
 		{
 			var files = GetFiles(artifactName);
-			foreach(var file in files)
+			foreach (var file in files)
 				AppVeyor.UploadArtifact(file.FullPath);
 		}
 	});
