@@ -2,7 +2,7 @@
 
 #tool "nuget:?package=GitVersion.CommandLine"
 #tool "nuget:?package=OpenCover"
-#tool coveralls.net
+#tool "nuget:?package=coveralls.io"
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
@@ -85,7 +85,10 @@ private void TestWithCoverage(string testProject)
 		});
 	};
 
-	var filters = "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Controllers.* +[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Services.*";
+	var filters = "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Controllers.*";
+	if (BuildSystem.IsLocalBuild)
+		filters += " +[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Services.*";
+
 	OpenCover(testAction, coverageOutput, new OpenCoverSettings 
 	{
 		OldStyle = true,
