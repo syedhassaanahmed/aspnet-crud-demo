@@ -43,14 +43,18 @@ Task("Build")
 	.IsDependentOn("Restore")
 	.Does(() => 
 	{
+		var projects = GetFiles("./**/*.xproj");
+
 		var settings = new DotNetCoreBuildSettings
 		{
 			Framework = framework,
 			Configuration = configuration,
-			OutputDirectory = outputDir
 		};
-					
-		DotNetCoreBuild("./*", settings);
+
+		foreach(var project in projects)
+		{
+			DotNetCoreBuild(project.GetDirectory().FullPath, settings);
+		}
 	});
 
 Task("Test")
