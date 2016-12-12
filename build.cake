@@ -62,8 +62,8 @@ Task("Test")
 	.Does(() => 
 	{
 		//Travis has an issue with running xUnit on .NET Core 1.1
-		if (BuildSystem.IsRunningOnTravisCI)
-			return;
+		// if (BuildSystem.IsRunningOnTravisCI)
+		// 	return;
 
 		var settings = new DotNetCoreTestSettings
 		{
