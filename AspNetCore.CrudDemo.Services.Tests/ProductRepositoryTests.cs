@@ -12,7 +12,7 @@ namespace AspNetCore.CrudDemo.Services.Tests
         public ProductRepositoryTests(DocumentDbFixture fixture)
         {
             _fixture = fixture;
-            _fixture.CreateCollectionAsync("Products").Wait();
+            _fixture.CreateCollectionAsync(Guid.NewGuid().ToString("N")).Wait();
         }
 
         [Fact]

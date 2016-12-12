@@ -1,4 +1,8 @@
+#addin Cake.Coveralls
+
 #tool "nuget:?package=GitVersion.CommandLine"
+#tool "nuget:?package=OpenCover"
+#tool coveralls.net
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
@@ -6,6 +10,8 @@ var framework = Argument("framework", "netcoreapp1.1");
 
 var outputDir = "./artifacts/";
 var artifactName = outputDir + "artifact.zip";
+var coverageOutput = outputDir + "coverage.xml";
+
 var projectPath = "./AspNetCore.CrudDemo";
 var projectJsonPath = projectPath + "/project.json";
 
@@ -39,8 +45,8 @@ Task("Version")
 
 Task("Build")
 	.IsDependentOn("Clean")
-	.IsDependentOn("Version")
 	.IsDependentOn("Restore")
+	.IsDependentOn("Version")
 	.Does(() => 
 	{
 		var projects = GetFiles("./**/*.xproj");
@@ -58,24 +64,47 @@ Task("Build")
 	});
 
 Task("Test")
+	.WithCriteria(() => !BuildSystem.IsRunningOnTravisCI) // TODO: Remove this line when Travis supports dotnet cli 1.1
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
-		//Travis doesn't have dotnet cli 1.1 yet
-		if (BuildSystem.IsRunningOnTravisCI)
-			return;
+		TestWithCoverage("./AspNetCore.CrudDemo.Controllers.Tests");
 
-		var settings = new DotNetCoreTestSettings
+		if (BuildSystem.IsLocalBuild)
+			TestWithCoverage("./AspNetCore.CrudDemo.Services.Tests");
+	});
+
+private void TestWithCoverage(string testProject)
+{
+	Action<ICakeContext> testAction = tool => 
+	{
+		tool.DotNetCoreTest(testProject, new DotNetCoreTestSettings 
 		{
 			Framework = framework,
-			Configuration = configuration,
-		};
+			Configuration = configuration
+		});
+	};
 
-		DotNetCoreTest("./AspNetCore.CrudDemo.Controllers.Tests", settings);
+	var filters = "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Controllers.* +[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Services.*";
+	OpenCover(testAction, coverageOutput, new OpenCoverSettings 
+	{
+		OldStyle = true,
+		MergeOutput = true,
+		Register = "user",
+		ArgumentCustomization = args => args.Append("-hideskipped:all")
+	}.WithFilter(filters));
+}
 
-		// Because DocumentDB emulator is not yet supported on CI
-		if (BuildSystem.IsLocalBuild)
-			DotNetCoreTest("./AspNetCore.CrudDemo.Services.Tests", settings);
+Task("CoverallsUpload")
+	.WithCriteria(() => FileExists(coverageOutput))
+	.WithCriteria(() => BuildSystem.IsRunningOnAppVeyor)
+	.IsDependentOn("Test")	
+	.Does(() => 
+	{
+		CoverallsIo(coverageOutput, new CoverallsIoSettings()
+		{
+			RepoToken = "OijM6dsjsDOlSisfoje2ZFIIECaQ6jfnY"
+		});
 	});
 
 Task("Publish")
@@ -90,16 +119,20 @@ Task("Publish")
 					
 		DotNetCorePublish(projectPath, settings);
 		Zip(outputDir, artifactName);
+	});
 
-		if (BuildSystem.IsRunningOnAppVeyor)
-		{
-			var files = GetFiles(artifactName);
-			foreach (var file in files)
-				AppVeyor.UploadArtifact(file.FullPath);
-		}
+Task("AppVeyorUpload")
+	.WithCriteria(() => BuildSystem.IsRunningOnAppVeyor)
+	.IsDependentOn("Publish")
+	.Does(() => 
+	{
+		var files = GetFiles(artifactName);
+		foreach (var file in files)
+			AppVeyor.UploadArtifact(file.FullPath);
 	});
 
 Task("Default")
-	.IsDependentOn("Publish");
+	.IsDependentOn("AppVeyorUpload")
+	.IsDependentOn("CoverallsUpload");
 
 RunTarget(target);
