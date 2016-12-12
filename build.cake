@@ -68,13 +68,13 @@ Task("Test")
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
-		TestWithCoverage("./AspNetCore.CrudDemo.Controllers.Tests", framework);
+		TestWithCoverage("./AspNetCore.CrudDemo.Controllers.Tests", framework, configuration);
 
 		if (BuildSystem.IsLocalBuild)
-			TestWithCoverage("./AspNetCore.CrudDemo.Services.Tests", framework);
+			TestWithCoverage("./AspNetCore.CrudDemo.Services.Tests", framework, configuration);
 	});
 
-private void TestWithCoverage(string testProject, string framework)
+private void TestWithCoverage(string testProject, string framework, string configuration)
 {
 	Action<ICakeContext> testAction = tool => 
 	{
