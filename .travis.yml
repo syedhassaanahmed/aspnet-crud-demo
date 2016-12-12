@@ -5,15 +5,15 @@ sudo: required
 #dist: trusty
 
 os:
-  #- linux
-  - osx
-osx_image: xcode7.3
+  - linux
+  #- osx
+#osx_image: xcode7.3
 
 before_install:
 - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
 
 install:
-- if test "$TRAVIS_OS_NAME" == "osx"; then brew tap caskroom/cask; brew cask install dotnet; fi
+#- if test "$TRAVIS_OS_NAME" == "osx"; then brew tap caskroom/cask; brew cask install dotnet; fi
 # - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
 # - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
 # - sudo apt-get update
