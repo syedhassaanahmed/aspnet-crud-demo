@@ -99,20 +99,3 @@ if $SHOW_VERSION; then
 else
     exec mono "$CAKE_EXE" $SCRIPT -verbosity=$VERBOSITY -configuration=$CONFIGURATION -target=$TARGET $DRYRUN "${SCRIPT_ARGUMENTS[@]}"
 fi
-
-###########################################################################
-# INSTALL .NET CORE CLI
-###########################################################################
-DOTNET_VERSION=1.0.0-preview2.1-003177
-DOTNET_INSTRALL_URI=https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0-preview4/scripts/obtain/dotnet-install.sh
-
-echo "Installing .NET CLI..."
-if [ ! -d "$SCRIPT_DIR/.dotnet" ]; then
-  mkdir "$SCRIPT_DIR/.dotnet"
-fi
-curl -Lsfo "$SCRIPT_DIR/.dotnet/dotnet-install.sh" $DOTNET_INSTRALL_URI
-sudo bash "$SCRIPT_DIR/.dotnet/dotnet-install.sh" -c preview --version $DOTNET_VERSION --install-dir .dotnet --no-path
-export PATH="$SCRIPT_DIR/.dotnet":$PATH
-export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-"$SCRIPT_DIR/.dotnet/dotnet" --info
