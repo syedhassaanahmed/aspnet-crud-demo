@@ -5,7 +5,7 @@ var configuration = Argument("configuration", "Release");
 var framework = Argument("framework", "netcoreapp1.1");
 
 var outputDir = "./artifacts/";
-var artifactName = "artifact.zip";
+var artifactName = outputDir + "artifact.zip";
 var projectPath = "./AspNetCore.CrudDemo";
 var projectJsonPath = projectPath + "/project.json";
 
@@ -61,9 +61,9 @@ Task("Test")
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
-		//Travis has an issue with running xUnit on .NET Core 1.1
-		// if (BuildSystem.IsRunningOnTravisCI)
-		// 	return;
+		//Travis doesn't have dotnet cli 1.1 yet
+		if (BuildSystem.IsRunningOnTravisCI)
+			return;
 
 		var settings = new DotNetCoreTestSettings
 		{
