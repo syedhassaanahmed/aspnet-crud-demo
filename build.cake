@@ -5,7 +5,6 @@ var configuration = Argument("configuration", "Release");
 
 var outputDir = "./artifacts/";
 var artifactName = "artifact.zip";
-var solutionPath = "./AspNetCore.CrudDemo.sln";
 var projectPath = "./AspNetCore.CrudDemo";
 var projectJsonPath = projectPath + "/project.json";
 
@@ -43,9 +42,13 @@ Task("Build")
 	.IsDependentOn("Restore")
 	.Does(() => 
 	{
-		DotNetBuild(solutionPath, settings => settings
-			.SetConfiguration(configuration)
-        	.SetVerbosity(Verbosity.Minimal));
+		var settings = new DotNetCoreBuildSettings
+		{
+			Configuration = configuration,
+			OutputDirectory = outputDir
+		};
+					
+		DotNetCoreBuild("./*", settings);
 	});
 
 Task("Test")
