@@ -2,7 +2,7 @@ language: csharp
 mono: latest
 sudo: required
 
-#dist: trusty
+dist: trusty
 
 os:
   - linux
