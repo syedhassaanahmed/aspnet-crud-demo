@@ -63,17 +63,30 @@ Task("Build")
 		}
 	});
 
-Task("Test")
+Task("TestWithoutCoverage")
+	.WithCriteria(() => BuildSystem.IsRunningOnTravisCI)
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
-		TestWithCoverage("./AspNetCore.CrudDemo.Controllers.Tests", framework, configuration, coverageOutput);
-
-		if (BuildSystem.IsLocalBuild)
-			TestWithCoverage("./AspNetCore.CrudDemo.Services.Tests", framework, configuration, coverageOutput);
+		DotNetCoreTest("./AspNetCore.CrudDemo.Controllers.Tests", new DotNetCoreTestSettings 
+		{
+			Framework = framework,
+			Configuration = configuration
+		});
 	});
 
-private void TestWithCoverage(string testProject, string framework, string configuration, string coverageOutput)
+Task("TestWithCoverage")
+	.WithCriteria(() => !BuildSystem.IsRunningOnTravisCI)
+	.IsDependentOn("Build")
+	.Does(() => 
+	{
+		TestWithCoverage("./AspNetCore.CrudDemo.Controllers.Tests", framework, configuration, coverageOutput, "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Controllers.*");
+
+		if (BuildSystem.IsLocalBuild)
+			TestWithCoverage("./AspNetCore.CrudDemo.Services.Tests", framework, configuration, coverageOutput, "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Services.*");
+	});
+
+private void TestWithCoverage(string testProject, string framework, string configuration, string coverageOutput, string filters)
 {
 	Action<ICakeContext> testAction = tool => 
 	{
@@ -83,10 +96,6 @@ private void TestWithCoverage(string testProject, string framework, string confi
 			Configuration = configuration
 		});
 	};
-
-	var filters = "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Controllers.*";
-	if (BuildSystem.IsLocalBuild)
-		filters += " +[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Services.*";
 
 	OpenCover(testAction, coverageOutput, new OpenCoverSettings 
 	{
@@ -100,7 +109,7 @@ private void TestWithCoverage(string testProject, string framework, string confi
 Task("CoverallsUpload")
 	.WithCriteria(() => FileExists(coverageOutput))
 	.WithCriteria(() => BuildSystem.IsRunningOnAppVeyor)
-	.IsDependentOn("Test")	
+	.IsDependentOn("TestWithCoverage")	
 	.Does(() => 
 	{
 		CoverallsIo(coverageOutput, new CoverallsIoSettings()
@@ -110,7 +119,8 @@ Task("CoverallsUpload")
 	});
 
 Task("Publish")
-	.IsDependentOn("Test")
+	.IsDependentOn("TestWithCoverage")
+	.IsDependentOn("TestWithoutCoverage")
 	.Does(() => 
 	{
 		var settings = new DotNetCorePublishSettings
