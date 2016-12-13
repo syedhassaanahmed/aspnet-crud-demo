@@ -29,4 +29,4 @@ ASP.NET Core 1.1 App demonstrating simple CRUD operations using [DocumentDB Emul
 ## Integration Tests
 
 - `ProductsController` is tested using `Microsoft.AspNetCore.TestHost` as [described here](https://docs.microsoft.com/en-us/aspnet/core/testing/integration-testing)
-- `ProductRepository` is tested by creating an `xUnit Fixture` [DocumentDbFixture](https://github.com/syedhassaanahmed/aspnet-core-crud-demo/blob/master/AspNetCore.CrudDemo.Services.Tests/DocumentDbFixture.cs) which assumes that DocumentDB Emulator is installed and running.  
+- `ProductRepository` is tested by creating an `xUnit Fixture` [DocumentDbFixture](https://github.com/syedhassaanahmed/aspnet-core-crud-demo/blob/master/AspNetCore.CrudDemo.Services.Tests/DocumentDbFixture.cs) which assumes that `DocumentDB Emulator` is installed and running.  

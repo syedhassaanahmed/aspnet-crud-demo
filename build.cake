@@ -64,7 +64,6 @@ Task("Build")
 	});
 
 Task("Test")
-	.WithCriteria(() => !BuildSystem.IsRunningOnTravisCI) // TODO: Remove this line when Travis supports dotnet cli 1.1
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
