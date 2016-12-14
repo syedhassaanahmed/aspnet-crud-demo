@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "1.0.0-*",
   "dependencies": {
     "HtmlAgilityPack.NetCore": "1.5.0.1",
     "Microsoft.AspNetCore": "1.1.0",
