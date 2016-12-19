@@ -49,7 +49,7 @@ Task("Build")
 	.IsDependentOn("Version")
 	.Does(() => 
 	{
-		var projects = GetFiles("./**/*.xproj");
+		var projects = GetFiles("../**/*.xproj");
 
 		var settings = new DotNetCoreBuildSettings
 		{
