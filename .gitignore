@@ -275,5 +275,4 @@ __pycache__/
 tools/
 
 # Project specific
-CI/tools/
-CI/buildOutput/
+buildOutput/
