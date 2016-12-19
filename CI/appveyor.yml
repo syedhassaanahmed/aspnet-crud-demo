@@ -1,3 +1,4 @@
 build_script:
-  - ps: .\CI\build.ps1
+  - ps: cd CI
+  - ps: .\build.ps1 
 test: off

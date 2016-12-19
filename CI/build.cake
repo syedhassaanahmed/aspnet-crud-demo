@@ -8,7 +8,7 @@ var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 var framework = Argument("framework", "netcoreapp1.1");
 
-var outputDir = "./outputDir/";
+var outputDir = "./buildOutput/";
 var artifactName = outputDir + "artifact.zip";
 var coverageOutput = outputDir + "coverage.xml";
 
