@@ -8,11 +8,11 @@ var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 var framework = Argument("framework", "netcoreapp1.1");
 
-var outputDir = "./artifacts/";
+var outputDir = "./outputDir/";
 var artifactName = outputDir + "artifact.zip";
 var coverageOutput = outputDir + "coverage.xml";
 
-var projectPath = "./AspNetCore.CrudDemo";
+var projectPath = "../AspNetCore.CrudDemo";
 var projectJsonPath = projectPath + "/project.json";
 
 Task("Clean")
@@ -68,7 +68,7 @@ Task("TestWithoutCoverage")
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
-		DotNetCoreTest("./AspNetCore.CrudDemo.Controllers.Tests", new DotNetCoreTestSettings 
+		DotNetCoreTest("../AspNetCore.CrudDemo.Controllers.Tests", new DotNetCoreTestSettings 
 		{
 			Framework = framework,
 			Configuration = configuration
@@ -80,10 +80,10 @@ Task("TestWithCoverage")
 	.IsDependentOn("Build")
 	.Does(() => 
 	{
-		TestWithCoverage("./AspNetCore.CrudDemo.Controllers.Tests", framework, configuration, coverageOutput, "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Controllers.*");
+		TestWithCoverage("../AspNetCore.CrudDemo.Controllers.Tests", framework, configuration, coverageOutput, "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Controllers.*");
 
 		if (BuildSystem.IsLocalBuild)
-			TestWithCoverage("./AspNetCore.CrudDemo.Services.Tests", framework, configuration, coverageOutput, "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Services.*");
+			TestWithCoverage("../AspNetCore.CrudDemo.Services.Tests", framework, configuration, coverageOutput, "+[AspNetCore.CrudDemo]AspNetCore.CrudDemo.Services.*");
 	});
 
 private void TestWithCoverage(string testProject, string framework, string configuration, string coverageOutput, string filters)
@@ -99,6 +99,7 @@ private void TestWithCoverage(string testProject, string framework, string confi
 
 	OpenCover(testAction, coverageOutput, new OpenCoverSettings 
 	{
+		// Needed for .NET Core
 		OldStyle = true,
 		MergeOutput = true,
 		Register = "user",

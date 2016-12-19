@@ -59,7 +59,7 @@ namespace AspNetCore.CrudDemo.Controllers
                 return BadRequest(ModelState);
 
             var result = await _repository.CreateAsync(product);
-            return Created($"{Request.GetDisplayUrl()}/{result.Id}", result);
+            return Created($"{Request.GetEncodedUrl()}/{result.Id}", result);
         }
 
         [HttpPut]
