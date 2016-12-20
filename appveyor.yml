@@ -1,3 +1,6 @@
+environment:
+  coveralls_repo_token:
+    secure: WISOv3fN66NMzOgpr0Zo6APJh0RkBUCM29lJ8CfE5hupPitYa+a2h/oXNFqLwXMo
 build_script:
   - ps: .\build.ps1 
 test: off

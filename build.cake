@@ -115,7 +115,7 @@ Task("CoverallsUpload")
 	{
 		CoverallsIo(coverageOutput, new CoverallsIoSettings()
 		{
-			RepoToken = "OijM6dsjsDOlSisfoje2ZFIIECaQ6jfnY"
+			RepoToken = EnvironmentVariable("coveralls_repo_token")
 		});
 	});
 
