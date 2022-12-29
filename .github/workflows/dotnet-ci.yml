@@ -43,3 +43,4 @@ jobs:
       if: ${{ always() }}
       with:
         path: "**/coverage.cobertura.xml"
+        minimum_coverage: 20
