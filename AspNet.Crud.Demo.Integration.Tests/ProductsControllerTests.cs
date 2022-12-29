@@ -5,8 +5,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using NUnit.Framework;
 using System.Net;
+using System.Net.Mime;
+using System.Text;
+using System.Text.Json;
 
 namespace AspNet.Crud.Demo.Integration.Tests
 {
@@ -82,7 +86,6 @@ namespace AspNet.Crud.Demo.Integration.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-                Assert.That(result, Is.Not.Empty);
                 Assert.That(result!.Single().Id, Is.EqualTo(product.Id));
                 Assert.That(result!.Single().Name, Is.EqualTo(product.Name));
             });
@@ -99,7 +102,6 @@ namespace AspNet.Crud.Demo.Integration.Tests
         }
 
         [Test]
-        [NonParallelizable]
         public async Task GetProduct_SingleProduct_ReturnsSameProduct()
         {
             // Arrange
@@ -115,27 +117,71 @@ namespace AspNet.Crud.Demo.Integration.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(response.Headers.ETag!.ToString(), Is.EqualTo(product.ETag));
                 Assert.That(result!.Id, Is.EqualTo(product.Id));
                 Assert.That(result!.Name, Is.EqualTo(product.Name));
             });
         }
 
         [Test]
-        public async Task PostProduct_SingleProduct_ReturnsSameProduct()
+        public async Task GetProduct_WrongETag_ReturnsSameProduct()
         {
             // Arrange
-            var newProduct = new NewProduct { Name = nameof(PostProduct_SingleProduct_ReturnsSameProduct) };
-            var apiRoute = "/Products";
+            var product = new Product { Name = nameof(GetProduct_WrongETag_ReturnsSameProduct) };
+            _dbContext.Products.Add(product);
+            await _dbContext.SaveChangesAsync();
 
             // Act
-            var response = await _httpClient.PostAsJsonAsync(apiRoute, newProduct);
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Products/{product.Id:D}");
+            request.Headers.Add(HeaderNames.IfNoneMatch, "\"blabla\"");
+            var response = await _httpClient.SendAsync(request);
+
             var result = await response.Content.ReadFromJsonAsync<Product>();
 
             // Assert
             Assert.Multiple(() =>
-            {   
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(response.Headers.ETag!.ToString(), Is.EqualTo(product.ETag));
+                Assert.That(result!.Id, Is.EqualTo(product.Id));
+                Assert.That(result!.Name, Is.EqualTo(product.Name));
+            });
+        }
+
+        [Test]
+        public async Task GetProduct_IfNoneMatchHeader_ReturnsNotModified()
+        {
+            // Arrange
+            var product = new Product { Name = nameof(GetProduct_IfNoneMatchHeader_ReturnsNotModified) };
+            _dbContext.Products.Add(product);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Products/{product.Id:D}");
+            request.Headers.Add(HeaderNames.IfNoneMatch, product.ETag);
+            var response = await _httpClient.SendAsync(request);
+
+            // Assert
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotModified));
+        }
+
+        [Test]
+        public async Task PostProduct_SingleProduct_ReturnsSameProduct()
+        {
+            // Arrange
+            var productRequest = new ProductRequest { Name = nameof(PostProduct_SingleProduct_ReturnsSameProduct) };
+            var apiRoute = "/Products";
+
+            // Act
+            var response = await _httpClient.PostAsJsonAsync(apiRoute, productRequest);
+            var result = await response.Content.ReadFromJsonAsync<Product>();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
                 Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-                Assert.That(result!.Name, Is.EqualTo(newProduct.Name));
+                Assert.That(response.Headers.ETag!.ToString(), Is.EqualTo(result!.ETag));
+                Assert.That(result!.Name, Is.EqualTo(productRequest.Name));
                 Assert.That($"{apiRoute}/{result!.Id:D}", Is.EqualTo(response.Headers.Location!.PathAndQuery));
             });
         }
@@ -144,44 +190,45 @@ namespace AspNet.Crud.Demo.Integration.Tests
         public async Task PutProduct_NonExistingProduct_ReturnsNotFound()
         {
             // Arrange
-            var updatedProduct = new UpdatedProduct { Name = string.Empty, ETag = string.Empty };
+            var productRequest = new ProductRequest { Name = string.Empty };
 
             // Act
-            var response = await _httpClient.PutAsJsonAsync($"/Products/{Guid.NewGuid():D}", updatedProduct);
+            var response = await _httpClient.PutAsJsonAsync($"/Products/{Guid.NewGuid():D}", productRequest);
 
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         }
 
         [Test]
-        [NonParallelizable]
-        public async Task PutProduct_WrongEtag_Returns409Conflict()
+        public async Task PutProduct_WrongETag_Returns412PreconditionFailed()
         {
             // Arrange
-            var product = new Product { Name = nameof(PutProduct_WrongEtag_Returns409Conflict) };
+            var product = new Product { Name = nameof(PutProduct_WrongETag_Returns412PreconditionFailed) };
             _dbContext.Products.Add(product);
             await _dbContext.SaveChangesAsync();
 
-            var updatedProduct = new UpdatedProduct { Name = $"{product.Name}_updated", ETag = string.Empty };
+            var productRequest = new ProductRequest { Name = $"{product.Name}_updated" };
 
             // Act
-            var response = await _httpClient.PutAsJsonAsync($"/Products/{product.Id:D}", updatedProduct);
+            var request = new HttpRequestMessage(HttpMethod.Put, $"/Products/{product.Id:D}");
+            request.Headers.Add(HeaderNames.IfMatch, "\"blabla\"");
+            request.Content = new StringContent(JsonSerializer.Serialize(productRequest), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var response = await _httpClient.SendAsync(request);
 
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.PreconditionFailed));
         }
 
         [Test]
-        [NonParallelizable]
-        public async Task PutProduct_ConcurrentUpdates_Returns409Conflict()
+        public async Task PutProduct_ConcurrentUpdates_Returns412PreconditionFailed()
         {
             // Arrange
-            var product = new Product { Name = nameof(PutProduct_ConcurrentUpdates_Returns409Conflict) };
+            var product = new Product { Name = nameof(PutProduct_ConcurrentUpdates_Returns412PreconditionFailed) };
             _dbContext.Products.Add(product);
             await _dbContext.SaveChangesAsync();
             var productId = product.Id.ToString("D");
 
-            // Insert product outside of the DBContext
+            // Update product outside of the DBContext
             var cosmosClient = _dbContext.Database.GetCosmosClient();
             var container = cosmosClient.GetContainer(DatabaseName, nameof(Product));
             var partitionKey = new PartitionKey(productId);
@@ -189,17 +236,18 @@ namespace AspNet.Crud.Demo.Integration.Tests
             await container.PatchItemAsync<Product>(productId, partitionKey, 
                 new[] { PatchOperation.Replace($"/{nameof(Product.Name)}", $"{product.Name}_updated_externally") });
 
-            var updatedProduct = new UpdatedProduct { Name = $"{product.Name}_updated_via_api", ETag = product.ETag };
-
             // Act
-            var response = await _httpClient.PutAsJsonAsync($"/Products/{productId}", updatedProduct);
+            var productRequest = new ProductRequest { Name = $"{product.Name}_updated_via_api" };
+            var request = new HttpRequestMessage(HttpMethod.Put, $"/Products/{productId}");
+            request.Headers.Add(HeaderNames.IfMatch, product.ETag);
+            request.Content = new StringContent(JsonSerializer.Serialize(productRequest), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var response = await _httpClient.SendAsync(request);
 
             // Assert
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.PreconditionFailed));
         }
 
         [Test]
-        [NonParallelizable]
         public async Task PutProduct_SingleProduct_ReturnsSameProduct()
         {
             // Arrange
@@ -207,18 +255,18 @@ namespace AspNet.Crud.Demo.Integration.Tests
             _dbContext.Products.Add(product);
             await _dbContext.SaveChangesAsync();
 
-            var updatedProduct = new UpdatedProduct { Name = $"{product.Name}_updated_via_api", ETag = product.ETag };
+            var productRequest = new ProductRequest { Name = $"{product.Name}_updated_via_api" };
 
             // Act
-            var response = await _httpClient.PutAsJsonAsync($"/Products/{product.Id:D}", updatedProduct);
+            var response = await _httpClient.PutAsJsonAsync($"/Products/{product.Id:D}", productRequest);
             var result = await response.Content.ReadFromJsonAsync<Product>();
 
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-                Assert.That(result!.Name, Is.EqualTo(updatedProduct.Name));
-                Assert.That(result!.ETag, Is.Not.EqualTo(updatedProduct.ETag));
+                Assert.That(response.Headers!.ToString(), Is.Not.EqualTo(product.ETag));
+                Assert.That(result!.Name, Is.EqualTo(productRequest.Name));
             });
         }
 
@@ -233,7 +281,6 @@ namespace AspNet.Crud.Demo.Integration.Tests
         }
 
         [Test]
-        [NonParallelizable]
         public async Task DeleteProduct_SingleProduct_ReturnsSameProduct()
         {
             // Arrange

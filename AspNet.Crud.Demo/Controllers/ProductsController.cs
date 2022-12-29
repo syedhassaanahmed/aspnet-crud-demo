@@ -36,17 +36,23 @@ namespace AspNet.Crud.Demo.Controllers
                 return NotFound();
             }
 
+            if (Request.Headers.IfNoneMatch.FirstOrDefault() == product.ETag)
+            {
+                return StatusCode(StatusCodes.Status304NotModified);
+            }
+
+            Response.Headers.ETag = product.ETag;
             return Ok(product);
         }
 
         // POST: /products
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(NewProduct newProduct)
+        public async Task<ActionResult<Product>> PostProduct(ProductRequest productRequest)
         {
             var product = new Product
             {
-                Name = newProduct.Name,
-                Price = newProduct.Price,
+                Name = productRequest.Name,
+                Price = productRequest.Price,
                 CreatedAt = DateTimeOffset.UtcNow,
                 ModifiedAt = DateTimeOffset.UtcNow
             };
@@ -54,29 +60,36 @@ namespace AspNet.Crud.Demo.Controllers
             _dbContext.Products.Add(product);
             await _dbContext.SaveChangesAsync();
 
+            Response.Headers.ETag = product.ETag;
             return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
         }
 
         // PUT: /products/{guid}
         [HttpPut("{id}")]
-        public async Task<ActionResult<Product>> PutProduct(Guid id, UpdatedProduct updatedProduct)
+        public async Task<ActionResult<Product>> PutProduct(Guid id, ProductRequest productRequest)
         {
-            var product = await _dbContext.Products.FindAsync(id);
-            if (product == null)
+            var existingProduct = await _dbContext.Products.FindAsync(id);
+            if (existingProduct == null)
             {
                 return NotFound();
             }
 
-            if (product.ETag != updatedProduct.ETag)
+            var ifMatchHeader = Request.Headers.IfMatch.FirstOrDefault();
+            if (ifMatchHeader != null && ifMatchHeader != existingProduct.ETag)
             {
-                return StatusCode(StatusCodes.Status409Conflict, product.ETag);
+                return StatusCode(StatusCodes.Status412PreconditionFailed);
             }
 
-            product.Name = updatedProduct.Name;
-            product.Price = updatedProduct.Price;
-            product.ModifiedAt = DateTimeOffset.UtcNow;
+            var product = new Product
+            {
+                Id = id,
+                Name = productRequest.Name,
+                Price = productRequest.Price,
+                CreatedAt = existingProduct.CreatedAt,
+                ModifiedAt = DateTimeOffset.UtcNow
+            };
 
-            _dbContext.Entry(product).State = EntityState.Modified;
+            _dbContext.Entry(existingProduct).CurrentValues.SetValues(product);
 
             try
             {
@@ -84,9 +97,10 @@ namespace AspNet.Crud.Demo.Controllers
             }
             catch (DBConcurrencyException)
             {
-                return StatusCode(StatusCodes.Status409Conflict, product.ETag);
+                return StatusCode(StatusCodes.Status412PreconditionFailed);
             }
 
+            Response.Headers.ETag = product.ETag;
             return Ok(product);
         }
 

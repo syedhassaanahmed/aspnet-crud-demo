@@ -1,20 +1,16 @@
 ﻿namespace AspNet.Crud.Demo.Models
 {
-    public class NewProduct
+    public class ProductRequest
     {
         public string Name { get; set; } = default!;
         public decimal Price { get; set; }
     }
 
-    public class UpdatedProduct : NewProduct
-    {
-        public string ETag { get; set; } = default!;
-    }
-
-    public class Product : UpdatedProduct
+    public class Product : ProductRequest
     {
         public Guid Id { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset ModifiedAt { get; set; }
+        public string ETag { get; set; } = default!;
     }
 }
