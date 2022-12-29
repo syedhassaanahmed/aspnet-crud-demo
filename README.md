@@ -1,4 +1,6 @@
 # aspnet-crud-demo
+![.NET CI](https://github.com/syedhassaanahmed/aspnet-crud-demo/actions/workflows/dotnet-ci.yml/badge.svg)
+
 This ASP.NET 6.0 App demonstrates simple CRUD operations on [Cosmos DB Core API](https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/query/getting-started) using [Entity Framework Core](https://learn.microsoft.com/en-us/ef/core/providers/cosmos/?tabs=dotnet-core-cli).
 
 ## API Routes
