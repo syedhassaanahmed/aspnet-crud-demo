@@ -43,6 +43,6 @@ jobs:
       if: ${{ always() }}
       with:
         path: "**/coverage.cobertura.xml"
-        minimum_coverage: 70
+        minimum_coverage: 50
         show_line: true
         show_branch: true
